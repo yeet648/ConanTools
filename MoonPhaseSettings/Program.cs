@@ -14,6 +14,7 @@ namespace MoonPhaseSettings
             if (args.Length <= 0) { Syntax(); return; }
 
 
+
             //confirm required setting files exist
             string file = args[0];
             if (!File.Exists(file))
