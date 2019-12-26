@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Text.RegularExpressions;
+using Mono.Options;
 
 namespace MoonPhaseSettings
 {
@@ -12,18 +13,29 @@ namespace MoonPhaseSettings
     {
         public static int Main(string[] args)
         {
-            Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ":Running Moon Harvest Multiplier...");
-
-            //check for required arguements or show syntax
-            if (args.Length <= 0) { return (Syntax()); }
-
-
-
-            //confirm required setting files exist
-            string file = args[0];
-            if (!File.Exists(file))
+            #region parse syntax
+            //required
+            string filePath = null;
+            //optional
+            var verbosity = 0;
+            bool shouldShowHelp = false;
+            OptionSet options;
+            options =  parseParamters(args);
+            options.Parse(args);
+            #endregion
+            if (shouldShowHelp)
             {
-                Console.WriteLine("ERROR: seeting file '" + file + "' does not exist.");
+                return (Syntax(options));
+            }
+
+            //start
+            Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ":Running Moon Harvest Multiplier...");
+            
+            
+            //confirm required setting files exist
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("ERROR: setting file '" + filePath + "' does not exist.");
                 return 20;
             }
 
@@ -34,14 +46,14 @@ namespace MoonPhaseSettings
             try
             {
                 //update settings file
-                Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + file);
-                string inText = File.ReadAllText(file);
+                Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + filePath);
+                string inText = File.ReadAllText(filePath);
                 string outText = inText;
                 //text = text.Replace("FOO", "BAR");
                 outText = Regex.Replace(outText, "ServerMessageOfTheDay=.*", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
                 outText = Regex.Replace(outText, "HarvestAmountMultiplier=.*", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
 
-                File.WriteAllText(file, outText);
+                File.WriteAllText(filePath, outText);
             }
             catch (Exception e)
             {
@@ -53,8 +65,40 @@ namespace MoonPhaseSettings
 
         }
 
-        private static int Syntax()
+        private static OptionSet parseParamters(string[] args)
         {
+            // these variables will be set when the command line is parsed
+            string filePath = null;
+            //options
+            var verbosity = 0;
+            bool shouldShowHelp = false;
+            // these are the available options, not that they set the variables
+            OptionSet options = new OptionSet {
+                { "f|file=", "the path to settings file", n => filePath = n },
+                { "v", "increase debug message verbosity", v => { if (v != null) ++verbosity; } },
+                { "h|help", "show this message and exit", h => shouldShowHelp = h != null },
+            };
+            List<string> extra;
+
+            try
+            {
+                // parse the command line
+                extra = options.Parse(args);
+            }
+            catch (OptionException e)
+            {
+                // parse error so give help message
+                Console.Write("ERROR: ");
+                Console.WriteLine(e.Message);
+                Console.WriteLine("Try '" + System.AppDomain.CurrentDomain.FriendlyName + ".exe --help' for more information.");
+            }
+
+            return (options);
+        }
+
+        private static int Syntax(OptionSet optional)
+        {
+            // show some app description message
             Console.WriteLine();
             Console.WriteLine("Use to update Conan Exiles settings based on real world lunar phase.");
             Console.WriteLine("For instance during a real world full moon the harvest multiplier could be increased ");
@@ -63,6 +107,12 @@ namespace MoonPhaseSettings
             Console.WriteLine("Usage: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe [path to Conan Exiles ServerSettings.ini]");
             Console.WriteLine();
             Console.WriteLine("Example: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe c:\\Exiles\\ConanSandbox\\Saved\\Config\\WindowsServer\\ServerSettings.ini");
+            Console.WriteLine();
+
+            // output the options
+            Console.WriteLine("Options:");
+            optional.WriteOptionDescriptions(Console.Out);
+
 
             return 10;
         }

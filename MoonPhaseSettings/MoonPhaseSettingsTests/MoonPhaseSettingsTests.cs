@@ -15,7 +15,7 @@ namespace MoonPhaseSettings.Tests
         [TestMethod()]
         public void Input_FileNotExist()
         {
-            //check for input when fil does not exist
+            //check for input when file does not exist
             string[] args = {"foo"};
             int expected = 20;
             int result =MoonPhaseSettings.Main(args);
