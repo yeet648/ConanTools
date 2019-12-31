@@ -19,12 +19,20 @@ namespace MoonPhaseSettings
             string filePath = null;
             //options
             var verbosity = 0;
+            
+            //default to 0 so we always get at least todays moon phase settings. 
+            int days = 0;
+
+            //default to UtC now or else use what is passed in
+            DateTime targetDate = DateTime.UtcNow;
             bool shouldShowHelp = false;
             if (args.Length == 0) { shouldShowHelp = true; }
 
             // these are the available options, not that they set the variables
             OptionSet options = new OptionSet {
                 { "f|file=", "the path to settings file", n => filePath = n },
+                { "d|days=", "number of days to preview moon phases", (int d) => days = d },
+                { "dt|date=", "specific date to show moon phase", (DateTime dt) => targetDate = dt },
                 { "v", "increase debug message verbosity", v => { if (v != null) ++verbosity; } },
                 { "h|help", "show this message and exit", h => shouldShowHelp = h != null },
             };
@@ -41,6 +49,7 @@ namespace MoonPhaseSettings
                 Console.Write("ERROR: ");
                 Console.WriteLine(e.Message);
                 Console.WriteLine("Try '" + System.AppDomain.CurrentDomain.FriendlyName + ".exe --help' for more information.");
+                return 5;
             }
 
             #endregion
@@ -51,43 +60,52 @@ namespace MoonPhaseSettings
 
             //start
             Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ":Running Moon Harvest Multiplier...");
+            Harvest HarvestDate = null;
+
+
+            //preview moon changes based on number of days or a specific date
+            if (days != 0) { filePath = null; }  //disable filepath so we don't update the settings file when moon phase preview is enabled 
+            for (int count = 0; count <= days; count++)
+            {
+                //get moon phase and set associated variables
+                Console.WriteLine();
+                HarvestDate = new Harvest(targetDate.AddDays(count));
+                Console.WriteLine("Date: " + HarvestDate.HarvestDate.ToShortDateString() + "\t" + HarvestDate.HarvestMultiplier.ToString() + "x," + HarvestDate.MoonPhase);
+                Console.WriteLine("ServerMessageOfTheDay= " + HarvestDate.MessageOfTheDay);
+                Console.WriteLine("HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier);
+                Console.WriteLine("NPCDamageMultiplier= " + HarvestDate.NPCDamageMultiplier);
+                Console.WriteLine("NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier);
+            }
             
-            
-            //confirm required setting files exist
-            if (!File.Exists(filePath))
+            //if file path was provided then update file with new settings
+            if (filePath != null)
             {
-                Console.WriteLine("ERROR: setting file '" + filePath + "' does not exist.");
-                return 20;
+                //confirm required setting files exist
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine("ERROR: setting file '" + filePath + "' does not exist.");
+                    return 20;
+                }
+
+                try
+                {
+                    //update settings file
+                    Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + filePath);
+                    string inText = File.ReadAllText(filePath);
+                    string outText = inText;
+                    outText = Regex.Replace(outText, "ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
+                    outText = Regex.Replace(outText, "HarvestAmountMultiplier=.*\n", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
+                    outText = Regex.Replace(outText, "NPCDamageMultiplier=.*\n", "NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier + Environment.NewLine);
+                    outText = Regex.Replace(outText, "NPCDamageTakenMultiplier=.*\n", "NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier + Environment.NewLine);
+
+                    File.WriteAllText(filePath, outText);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ERROR: updating settings file " + e.Message);
+                    return 30;
+                }
             }
-
-            //get moon phase and set associated variables
-            Console.WriteLine();
-            Harvest HarvestDate = new Harvest(DateTime.UtcNow);
-            Console.WriteLine("Date: " + HarvestDate.HarvestDate.ToShortDateString() + "\t" + HarvestDate.HarvestMultiplier.ToString() + "x," + HarvestDate.MoonPhase);
-            Console.WriteLine("ServerMessageOfTheDay= " + HarvestDate.MessageOfTheDay);
-            Console.WriteLine("HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier);
-            Console.WriteLine("NPCDamageMultiplier= " + HarvestDate.NPCDamageMultiplier);
-            Console.WriteLine("NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier);
-
-            try
-            {
-                //update settings file
-                Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + filePath);
-                string inText = File.ReadAllText(filePath);
-                string outText = inText;
-                outText = Regex.Replace(outText, "ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
-                outText = Regex.Replace(outText, "HarvestAmountMultiplier=.*\n", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
-                outText = Regex.Replace(outText, "NPCDamageMultiplier=.*\n", "NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier + Environment.NewLine);
-                outText = Regex.Replace(outText, "NPCDamageTakenMultiplier=.*\n", "NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier + Environment.NewLine);
-
-                File.WriteAllText(filePath, outText);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("ERROR: " + e.Message);
-                return 30;
-            }
-
             return 0;
 
         }
@@ -100,6 +118,8 @@ namespace MoonPhaseSettings
             Console.WriteLine("Use to update Conan Exiles settings based on real world lunar phase.");
             Console.WriteLine("For instance during a real world full moon the harvest multiplier could be increased ");
             Console.WriteLine("and during new moon the harvest multiplier could be decreased.");
+            Console.WriteLine();
+            Console.WriteLine("Optional: Preview moon phases x number of days ahead.  If using this option settings file will not be updates.");
             Console.WriteLine();
             Console.WriteLine("Usage: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe [path to Conan Exiles ServerSettings.ini]");
             Console.WriteLine();
@@ -165,8 +185,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waxing Crescent Moon";
                     this.HarvestMultiplier = 1.5;
-                    this.NPCDamageMultiplier = 0.9;
-                    this.NPCDamageTakenMultiplier = 1.2;
+                    this.NPCDamageMultiplier = 1.2;
+                    this.NPCDamageTakenMultiplier = 0.9;
                     NPCDamageDesc = "NPC's are weaker during the Crescent Moon.";
                 }
 
@@ -175,8 +195,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "First Quarter Moon";
                     this.HarvestMultiplier = 3;
-                    this.NPCDamageMultiplier = 0.8;
-                    this.NPCDamageTakenMultiplier = 1.4;
+                    this.NPCDamageMultiplier = 1.4;
+                    this.NPCDamageTakenMultiplier = 0.8;
                     NPCDamageDesc = "NPC's are gaining strength during this moon phase.";
                 }
                 //waxing gibbous
@@ -184,8 +204,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waxing Gibbous Moon";
                     this.HarvestMultiplier = 4.5;
-                    this.NPCDamageMultiplier = 0.7;
-                    this.NPCDamageTakenMultiplier = 1.5;
+                    this.NPCDamageMultiplier = 1.5;
+                    this.NPCDamageTakenMultiplier = 0.7;
                     NPCDamageDesc = "Beware, NPC's grow even stronger during the Gibbous Moon.";
                 }
                 //full
@@ -193,8 +213,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Full Moon";
                     this.HarvestMultiplier = 6;
-                    this.NPCDamageMultiplier = 0.5;
-                    this.NPCDamageTakenMultiplier = 2;
+                    this.NPCDamageMultiplier = 2;
+                    this.NPCDamageTakenMultiplier = 0.5;
                     NPCDamageDesc = "NPC's are at their peak power during the Full Moon!";
                 }
                 //waning gibbous
@@ -202,8 +222,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waning Gibbous Moon";
                     this.HarvestMultiplier = 4.5;
-                    this.NPCDamageMultiplier = 0.7;
-                    this.NPCDamageTakenMultiplier = 1.5;
+                    this.NPCDamageMultiplier = 1.5;
+                    this.NPCDamageTakenMultiplier = 0.7;
                     NPCDamageDesc = "Beware, NPC's grow even stronger during the Gibbous Moon.";
                 }
                 //last quarter
@@ -211,8 +231,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Last Quarter Moon";
                     this.HarvestMultiplier = 3;
-                    this.NPCDamageMultiplier = 0.8;
-                    this.NPCDamageTakenMultiplier = 1.4;
+                    this.NPCDamageMultiplier = 1.4;
+                    this.NPCDamageTakenMultiplier = 0.8;
                     NPCDamageDesc = "NPC's are gaining strength during this moon phase.";
                 }
                 //waning crescent
@@ -220,8 +240,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waning Crescent Moon";
                     this.HarvestMultiplier = 1.5;
-                    this.NPCDamageMultiplier = 0.9;
-                    this.NPCDamageTakenMultiplier = 1.2;
+                    this.NPCDamageMultiplier = 1.2;
+                    this.NPCDamageTakenMultiplier = 0.9;
                     NPCDamageDesc = "NPC's are weaker during the Crescent Moon.";
 
                 }
