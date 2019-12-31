@@ -35,6 +35,32 @@ namespace MoonPhaseSettings.Tests
 
         }
         [TestMethod()]
+        public void Input_ShowHelp()
+        {
+            //check that help is displayed with this flag
+            string[] args = { "-h" };
+            int expected = 10;
+            int result = MoonPhaseSettings.Main(args);
+            Assert.AreEqual(expected, result);
+
+            args[0] = "--help" ;
+            expected = 10;
+            result = MoonPhaseSettings.Main(args);
+            Assert.AreEqual(expected, result);
+
+        }
+
+        [TestMethod()]
+        public void Input_ParseError()
+        {
+            //check that error is handled with bad input
+            string[] args = { "-d", "Foo" };
+            int expected = 5;
+            int result = MoonPhaseSettings.Main(args);
+            Assert.AreEqual(expected, result);
+
+        }
+        [TestMethod()]
         public void Input_UpdateSettings()
         {
             //check for input when file does not exist
