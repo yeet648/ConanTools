@@ -64,19 +64,19 @@ namespace MoonPhaseSettings
 
 
             //preview moon changes based on number of days or a specific date
-            if (days != 0) { filePath = null; }  //disable filepath so we don't update the settings file when moon phase preview is enabled 
-            for (int count = 0; count <= days; count++)
+
+            if (days != 0)
             {
-                //get moon phase and set associated variables
-                Console.WriteLine();
-                HarvestDate = new Harvest(targetDate.AddDays(count));
-                Console.WriteLine("Date: " + HarvestDate.HarvestDate.ToShortDateString() + "\t" + HarvestDate.HarvestMultiplier.ToString() + "x," + HarvestDate.MoonPhase);
-                Console.WriteLine("ServerMessageOfTheDay= " + HarvestDate.MessageOfTheDay);
-                Console.WriteLine("HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier);
-                Console.WriteLine("NPCDamageMultiplier= " + HarvestDate.NPCDamageMultiplier);
-                Console.WriteLine("NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier);
+                filePath = null;   //disable filepath so we don't update the settings file when moon phase preview is enabled 
+                for (int count = 0; count <= days; count++)
+                {
+                    //get moon phase and set associated variables
+                    Console.WriteLine();
+                    HarvestDate = new Harvest(targetDate.AddDays(count));
+                    showSettings(HarvestDate);
+                }
+                return 15;
             }
-            
             //if file path was provided then update file with new settings
             if (filePath != null)
             {
@@ -89,15 +89,16 @@ namespace MoonPhaseSettings
 
                 try
                 {
+                    HarvestDate = new Harvest(targetDate);
+                    showSettings(HarvestDate);
                     //update settings file
                     Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + filePath);
                     string inText = File.ReadAllText(filePath);
                     string outText = inText;
-                    outText = Regex.Replace(outText, "ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
-                    outText = Regex.Replace(outText, "HarvestAmountMultiplier=.*\n", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
-                    outText = Regex.Replace(outText, "NPCDamageMultiplier=.*\n", "NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier + Environment.NewLine);
-                    outText = Regex.Replace(outText, "NPCDamageTakenMultiplier=.*\n", "NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier + Environment.NewLine);
-
+                    outText = updateSettings(outText, @"ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
+                    outText = updateSettings(outText, @"HarvestAmountMultiplier=.*\n", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
+                    outText = updateSettings(outText, @"NPCDamageMultiplier=.*\n", "NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier + Environment.NewLine);
+                    outText = updateSettings(outText, @"NPCDamageTakenMultiplier=.*\n", "NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier + Environment.NewLine);
                     File.WriteAllText(filePath, outText);
                 }
                 catch (Exception e)
@@ -110,6 +111,34 @@ namespace MoonPhaseSettings
 
         }
 
+        private static string updateSettings(string inText, string searchPattern, string replacePattern)
+        {
+            string outText = inText;
+
+            Regex regex = new Regex(searchPattern);
+            Match match = regex.Match(inText);
+            if (match.Success)
+            {
+                Console.WriteLine("UPDATING VALUE: " + replacePattern);
+                outText = Regex.Replace(inText, searchPattern, replacePattern);
+            }
+            else
+            {
+                Console.WriteLine("ADDING VALUE: " + replacePattern);
+                outText = inText + replacePattern;
+            }
+
+            return outText;
+        }
+
+        private static void showSettings(Harvest HarvestDate)
+        {
+            Console.WriteLine("Date: " + HarvestDate.HarvestDate.ToShortDateString() + "\t" + HarvestDate.HarvestMultiplier.ToString() + "x," + HarvestDate.MoonPhase);
+            Console.WriteLine("ServerMessageOfTheDay= " + HarvestDate.MessageOfTheDay);
+            Console.WriteLine("HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier);
+            Console.WriteLine("NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier);
+            Console.WriteLine("NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier);
+        }
 
         private static int Syntax(OptionSet optional)
         {
