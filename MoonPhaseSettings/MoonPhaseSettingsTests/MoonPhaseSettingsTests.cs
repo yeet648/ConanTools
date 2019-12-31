@@ -65,7 +65,7 @@ namespace MoonPhaseSettings.Tests
         {
             //check for input when file does not exist
             string origFile = "..\\..\\..\\MoonPhaseSettingsTests\\testData\\UpdatedSettingsFile.txt.orig";
-            string inputFile = "..\\..\\..\\MoonPhaseSettingsTests\\testData\\UpdatedSettingsFile.txt";
+            string inputFile = System.IO.Path.GetTempPath() + Path.GetRandomFileName(); 
             File.Copy(origFile, inputFile, true);
 
             //use known First Quarter Moon day as test
@@ -114,6 +114,61 @@ namespace MoonPhaseSettings.Tests
             }
 
         }
+
+        [TestMethod()]
+        public void Input_AddSettings()
+        {
+            //should add settings if they do not exist
+            string inputFile = System.IO.Path.GetTempPath() + Path.GetRandomFileName();
+            File.Create(inputFile).Dispose();
+            
+            //use known First Quarter Moon day as test
+            string[] args = { "-f", inputFile, "-dt", "2/1/2020" };
+            string expectedMoonPhase = "First Quarter Moon";
+            double expectedHarvestMultiplier = 3;
+            double expectedNPCDamageMultiplier = 1.4;
+            double expectedNPCDamageTakenMultiplier = 0.8;
+
+            //check for expected return code
+            int expected = 0;
+            int result = MoonPhaseSettings.Main(args);
+            Assert.AreEqual(expected, result);
+
+            //check that substitution occured
+            string inText = File.ReadAllText(inputFile);
+            Regex regex = null;
+            Match match = null;
+
+            regex = new Regex(expectedMoonPhase);
+            match = regex.Match(inText);
+            if (!match.Success)
+            {
+                Assert.Fail("Expected Moon Phase");
+            }
+
+            regex = new Regex("HarvestAmountMultiplier=" + expectedHarvestMultiplier + Environment.NewLine);
+            match = regex.Match(inText);
+            if (!match.Success)
+            {
+                Assert.Fail("Expected Harvest Multiplier");
+            }
+
+            regex = new Regex("NPCDamageMultiplier=" + expectedNPCDamageMultiplier);
+            match = regex.Match(inText);
+            if (!match.Success)
+            {
+                Assert.Fail("Expected NPC Damage Multiplier");
+            }
+
+            regex = new Regex("NPCDamageTakenMultiplier=" + expectedNPCDamageTakenMultiplier);
+            match = regex.Match(inText);
+            if (!match.Success)
+            {
+                Assert.Fail("Expected NPC Damage Taken Multiplier");
+            }
+
+        }
+
     }
 
     [TestClass()]

@@ -11,7 +11,7 @@ namespace MoonPhaseSettings
 {
     public class MoonPhaseSettings
     {
-        
+
         public static int Main(string[] args)
         {
             #region parse syntax
@@ -61,7 +61,6 @@ namespace MoonPhaseSettings
             //start
             Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ":Running Moon Harvest Multiplier...");
             Harvest HarvestDate = null;
-
 
             //preview moon changes based on number of days or a specific date
 
@@ -142,7 +141,12 @@ namespace MoonPhaseSettings
 
         private static int Syntax(OptionSet optional)
         {
+            Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            string displayableVersion = $"{version}";
+
             // show some app description message
+            Console.WriteLine();
+            Console.WriteLine(System.AppDomain.CurrentDomain.FriendlyName + " v" + displayableVersion);
             Console.WriteLine();
             Console.WriteLine("Use to update Conan Exiles settings based on real world lunar phase.");
             Console.WriteLine("For instance during a real world full moon the harvest multiplier could be increased ");
