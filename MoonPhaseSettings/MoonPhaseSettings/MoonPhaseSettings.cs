@@ -165,8 +165,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waxing Crescent Moon";
                     this.HarvestMultiplier = 1.5;
-                    this.NPCDamageMultiplier = 1.2;
-                    this.NPCDamageTakenMultiplier = 0.9;
+                    this.NPCDamageMultiplier = 0.9;
+                    this.NPCDamageTakenMultiplier = 1.2;
                     NPCDamageDesc = "NPC's are weaker during the Crescent Moon.";
                 }
 
@@ -175,8 +175,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "First Quarter Moon";
                     this.HarvestMultiplier = 3;
-                    this.NPCDamageMultiplier = 1.4;
-                    this.NPCDamageTakenMultiplier = 0.8;
+                    this.NPCDamageMultiplier = 0.8;
+                    this.NPCDamageTakenMultiplier = 1.4;
                     NPCDamageDesc = "NPC's are gaining strength during this moon phase.";
                 }
                 //waxing gibbous
@@ -184,8 +184,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waxing Gibbous Moon";
                     this.HarvestMultiplier = 4.5;
-                    this.NPCDamageMultiplier = 1.5;
-                    this.NPCDamageTakenMultiplier = 0.7;
+                    this.NPCDamageMultiplier = 0.7;
+                    this.NPCDamageTakenMultiplier = 1.5;
                     NPCDamageDesc = "Beware, NPC's grow even stronger during the Gibbous Moon.";
                 }
                 //full
@@ -193,8 +193,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Full Moon";
                     this.HarvestMultiplier = 6;
-                    this.NPCDamageMultiplier = 2;
-                    this.NPCDamageTakenMultiplier = 0.5;
+                    this.NPCDamageMultiplier = 0.5;
+                    this.NPCDamageTakenMultiplier = 2;
                     NPCDamageDesc = "NPC's are at their peak power during the Full Moon!";
                 }
                 //waning gibbous
@@ -202,8 +202,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waning Gibbous Moon";
                     this.HarvestMultiplier = 4.5;
-                    this.NPCDamageMultiplier = 1.5;
-                    this.NPCDamageTakenMultiplier = 0.7;
+                    this.NPCDamageMultiplier = 0.7;
+                    this.NPCDamageTakenMultiplier = 1.5;
                     NPCDamageDesc = "Beware, NPC's grow even stronger during the Gibbous Moon.";
                 }
                 //last quarter
@@ -211,8 +211,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Last Quarter Moon";
                     this.HarvestMultiplier = 3;
-                    this.NPCDamageMultiplier = 1.4;
-                    this.NPCDamageTakenMultiplier = 0.8;
+                    this.NPCDamageMultiplier = 0.8;
+                    this.NPCDamageTakenMultiplier = 1.4;
                     NPCDamageDesc = "NPC's are gaining strength during this moon phase.";
                 }
                 //waning crescent
@@ -220,8 +220,8 @@ namespace MoonPhaseSettings
                 {
                     this.MoonPhase = "Waning Crescent Moon";
                     this.HarvestMultiplier = 1.5;
-                    this.NPCDamageMultiplier = 1.2;
-                    this.NPCDamageTakenMultiplier = 0.9;
+                    this.NPCDamageMultiplier = 0.9;
+                    this.NPCDamageTakenMultiplier = 1.2;
                     NPCDamageDesc = "NPC's are weaker during the Crescent Moon.";
 
                 }
