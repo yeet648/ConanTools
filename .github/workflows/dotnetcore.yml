@@ -16,4 +16,4 @@ jobs:
     - name: CD to working directory
       run: cd MoonPhaseSettings
     - name: Build with dotnet
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release MoonPhaseSettings\MoonPhaseSettings.sln
