@@ -12,8 +12,8 @@ jobs:
     - name: Setup .NET Standard
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 4.7.2    
+        dotnet-version: 2.2.108   
     - name: CD to working directory
       run: cd MoonPhaseSettings
     - name: Build with dotnet
-      run: dotnet build --configuration Release MoonPhaseSettings\MoonPhaseSettings.sln
+      run: msbuild MoonPhaseSettings\MoonPhaseSettings.sln -p:Configuration=Release
