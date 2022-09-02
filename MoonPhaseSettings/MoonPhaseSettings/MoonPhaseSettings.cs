@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +17,8 @@ namespace MoonPhaseSettings
             #region parse syntax
             // these variables will be set when the command line is parsed
             string filePath = null;
+            string MOTDfilePath = null;
+
             //options
             var verbosity = 0;
             
@@ -31,6 +33,7 @@ namespace MoonPhaseSettings
             // these are the available options, not that they set the variables
             OptionSet options = new OptionSet {
                 { "f|file=", "the path to settings file", n => filePath = n },
+                { "m|MOTDFile=", "(optional) default Server Message of the Day file", m => MOTDfilePath = m },
                 { "d|days=", "number of days to preview moon phases", (int d) => days = d },
                 { "dt|date=", "specific date to show moon phase", (DateTime dt) => targetDate = dt },
                 { "v", "increase debug message verbosity", v => { if (v != null) ++verbosity; } },
@@ -61,9 +64,9 @@ namespace MoonPhaseSettings
             //start
             Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ":Running Moon Harvest Multiplier...");
             Harvest HarvestDate = null;
+            string MOTDPrepend = null; 
 
             //preview moon changes based on number of days or a specific date
-
             if (days != 0)
             {
                 filePath = null;   //disable filepath so we don't update the settings file when moon phase preview is enabled 
@@ -76,6 +79,32 @@ namespace MoonPhaseSettings
                 }
                 return 15;
             }
+
+            //if defaul MOTD file was provided get that to pre-append to other MOTD messages
+            if (MOTDfilePath != null)
+            {
+                //confirm required setting files exist
+                if (!File.Exists(MOTDfilePath))
+                {
+                    Console.WriteLine("ERROR: Default MOTD file '" + MOTDfilePath + "' does not exist.");
+                    return 20;
+                }
+                else
+                {
+                    try
+                    {
+                        MOTDPrepend = File.ReadAllText(MOTDfilePath).Trim();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("ERROR: reading file " + e.Message);
+                        return 21;
+                    }
+                }
+
+
+            }
+
             //if file path was provided then update file with new settings
             if (filePath != null)
             {
@@ -83,7 +112,7 @@ namespace MoonPhaseSettings
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine("ERROR: setting file '" + filePath + "' does not exist.");
-                    return 20;
+                    return 25;
                 }
 
                 try
@@ -94,7 +123,7 @@ namespace MoonPhaseSettings
                     Console.WriteLine(DateTime.UtcNow.ToShortDateString() + " " + DateTime.UtcNow.ToShortTimeString() + ": Updating setting file: " + filePath);
                     string inText = File.ReadAllText(filePath);
                     string outText = inText;
-                    outText = updateSettings(outText, @"ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + HarvestDate.MessageOfTheDay + Environment.NewLine);
+                    outText = updateSettings(outText, @"ServerMessageOfTheDay=.*\n", "ServerMessageOfTheDay=" + MOTDPrepend + " " + HarvestDate.MessageOfTheDay + Environment.NewLine);
                     outText = updateSettings(outText, @"HarvestAmountMultiplier=.*\n", "HarvestAmountMultiplier=" + HarvestDate.HarvestMultiplier + Environment.NewLine);
                     outText = updateSettings(outText, @"NPCDamageMultiplier=.*\n", "NPCDamageMultiplier=" + HarvestDate.NPCDamageMultiplier + Environment.NewLine);
                     outText = updateSettings(outText, @"NPCDamageTakenMultiplier=.*\n", "NPCDamageTakenMultiplier=" + HarvestDate.NPCDamageTakenMultiplier + Environment.NewLine);
@@ -156,7 +185,7 @@ namespace MoonPhaseSettings
             Console.WriteLine();
             Console.WriteLine("Usage: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe [path to Conan Exiles ServerSettings.ini]");
             Console.WriteLine();
-            Console.WriteLine("Example: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe c:\\Exiles\\ConanSandbox\\Saved\\Config\\WindowsServer\\ServerSettings.ini");
+            Console.WriteLine("Example: " + System.AppDomain.CurrentDomain.FriendlyName + ".exe -f c:\\Exiles\\ConanSandbox\\Saved\\Config\\WindowsServer\\ServerSettings.ini");
             Console.WriteLine();
 
             // output the options
